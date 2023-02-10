@@ -1,0 +1,172 @@
+#########################
+# Evan Peck
+# Capstone Project
+# 2/9/23
+# Group 6, Skittlz Dynasty
+# GUI for control of vibration device
+#########################
+
+###### NOTES ########
+# Adjust to actual pixel size of mini PC monitor
+# Adjust Cam Amplitude frame
+# Adjust slider to be uniform length
+# Reduce width of entry boxes
+# Connect entry box value with slider value
+# Set slider bar limits and increments
+# Save values as variables
+# Add AutoLiv and UofU images
+# Get feedback on color pallet?
+
+import tkinter
+import customtkinter
+import tkinter.messagebox
+
+customtkinter.set_appearance_mode("Dark")
+customtkinter.set_default_color_theme("blue")
+
+class App(customtkinter.CTk):
+    def __init__(self):
+        super().__init__()
+
+        self.title("AutoLiv Vibration Control")
+        self.geometry(f"{1100}x{580}")
+
+        #Grid Layout
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure((2,3,4,5,6), weight=1)
+        self.grid_rowconfigure((0,1,2,3,4,5), weight=1)
+
+        #Radiobuttons
+        self.radiobutton_frame = customtkinter.CTkFrame(self)
+        self.radiobutton_frame.grid(row=0, column=0, rowspan=1, columnspan=1, padx=(20,0), pady=(20,0), sticky="nsew")
+        self.radio_var = tkinter.IntVar(value=0)
+        self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="Cam Amplitude")
+        self.label_radio_group.grid(row=0, column=1, columnspan=1, padx=10, pady=(20,20), sticky="")
+        self.amp_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, text="1mm", variable=self.radio_var, value =0)
+        self.amp_1.grid(row=1, column=0, padx=20, pady=10, sticky="n")
+        self.amp_06 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, text="0.6mm", variable=self.radio_var, value=1)
+        self.amp_06.grid(row=1, column=1, padx=20, pady=10, sticky="n")
+        self.amp_04 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, text="0.4mm", variable=self.radio_var, value=2)
+        self.amp_04.grid(row=1, column=2, padx=20, pady=10, sticky="n")
+
+        #Frequency Slider
+        self.freq_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        self.freq_frame.grid(row=1, column=0, padx=(10, 0), pady=(20, 0), sticky="nsew")
+        self.freq_frame.grid_columnconfigure(1, weight=1)
+        self.freq_frame.grid_rowconfigure(2, weight=1)
+        self.freq_var = "disabled"
+        self.freqSlider = customtkinter.CTkSlider(self.freq_frame, orientation="horizontal", state="disabled")
+        self.freqSlider.grid(row=1, column=1, padx=(10,10), pady=(10,10), sticky="ew")
+
+        self.vibButton = customtkinter.CTkCheckBox(self.freq_frame, text="Enable Vibration", command=self.freqToggle, onvalue=1, offvalue=0)
+        self.vibButton.grid(row=1, column=0, padx=(10,10), pady=(10,10))
+
+        self.freqEntry = customtkinter.CTkEntry(self.freq_frame, placeholder_text="Hz", state="disabled")
+        self.freqEntry.grid(row=1, column=3, padx=(10,10), pady=(10,10))
+
+        self.freqLabel = customtkinter.CTkLabel(self.freq_frame, text="Hz")
+        self.freqLabel.grid(row=1, column=4, padx=(0,10), pady=(10,10))
+
+        #Force Slider
+        self.force_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        self.force_frame.grid(row=2, column=0, padx=(10, 0), pady=(20, 0), sticky="nsew")
+        self.force_frame.grid_columnconfigure(1, weight=1)
+        self.force_frame.grid_rowconfigure(3, weight=1)
+        self.force_var = "disabled"
+        self.forceSlider = customtkinter.CTkSlider(self.force_frame, orientation="horizontal", state="disabled")
+        self.forceSlider.grid(row=2, column=1, padx=(10,10), pady=(10,10), sticky="ew")
+
+        self.compactButton = customtkinter.CTkCheckBox(self.force_frame, text="Enable Compaction", command=self.forceToggle, onvalue=1, offvalue=0)
+        self.compactButton.grid(row=2, column=0, padx=(10,10), pady=(10,10))
+
+        self.forceEntry = customtkinter.CTkEntry(self.force_frame, placeholder_text="N", state="disabled")
+        self.forceEntry.grid(row=2, column=3, padx=(10,10), pady=(10,10))
+
+        self.forceLabel = customtkinter.CTkLabel(self.force_frame, text="N")
+        self.forceLabel.grid(row=2, column=4, padx=(0,10), pady=(10,10))
+
+        #Rotation Slider
+        self.rotate_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        self.rotate_frame.grid(row=3, column=0, padx=(10, 0), pady=(20, 0), sticky="nsew")
+        self.rotate_frame.grid_columnconfigure(1, weight=1)
+        self.rotate_frame.grid_rowconfigure(4, weight=1)
+        self.rotate_var = "disabled"
+        self.rotateSlider = customtkinter.CTkSlider(self.rotate_frame, orientation="horizontal", state="disabled")
+        self.rotateSlider.grid(row=3, column=1, padx=(10,10), pady=(10,10), sticky="ew")
+
+        self.rotateButton = customtkinter.CTkCheckBox(self.rotate_frame, text="Enable Rotation", command=self.rotateToggle, onvalue=1, offvalue=0)
+        self.rotateButton.grid(row=3, column=0, padx=(10,10), pady=(10,10))
+
+        self.rotateEntry = customtkinter.CTkEntry(self.rotate_frame, placeholder_text="rad/s", state="disabled")
+        self.rotateEntry.grid(row=3, column=3, padx=(10,10), pady=(10,10))
+
+        self.rotateLabel = customtkinter.CTkLabel(self.rotate_frame, text="rad/s")
+        self.rotateLabel.grid(row=3, column=4, padx=(0,10), pady=(10,10))
+
+        #Run Time
+        self.time_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        self.time_frame.grid(row=4, column=0, padx=(10, 0), pady=(20, 0), sticky="nsew")
+        self.time_frame.grid_columnconfigure(1, weight=1)
+        self.time_frame.grid_rowconfigure(5, weight=1)
+        self.time_var = "disabled"
+        self.timeSlider = customtkinter.CTkSlider(self.time_frame, orientation="horizontal", state="disabled")
+        self.timeSlider.grid(row=4, column=1, padx=(10,10), pady=(10,10), sticky="ew")
+
+        self.timeButton = customtkinter.CTkCheckBox(self.time_frame, text="Enable Run Time", command=self.timeToggle, onvalue=1, offvalue=0)
+        self.timeButton.grid(row=4, column=0, padx=(10,10), pady=(10,10))
+
+        self.timeEntry = customtkinter.CTkEntry(self.time_frame, placeholder_text="sec.", state="disabled")
+        self.timeEntry.grid(row=4, column=3, padx=(10,10), pady=(10,10))
+
+        self.timeLabel = customtkinter.CTkLabel(self.time_frame, text="sec.")
+        self.timeLabel.grid(row=4, column=4, padx=(0,10), pady=(10,10))
+
+
+        #Current Placeholder
+        self.results_frame = customtkinter.CTkFrame(self)
+        self.results_frame.grid(row=0, column=1, rowspan=5, columnspan=3, padx=(20,0), pady=(20,0), sticky="nsew")
+        self.results_var = tkinter.IntVar(value=0)
+        self.results_label = customtkinter.CTkLabel(master=self.results_frame, text="Results")
+        self.results_label.grid(row=0, column=1, padx=10, pady=(20,20))
+
+
+    def freqToggle(self):
+        if self.vibButton.get() == 1:
+            self.freqSlider.configure(state="normal")
+            self.freqEntry.configure(state="normal")
+        else:
+            self.freqSlider.configure(state="disabled")
+            self.freqEntry.delete(0, len(self.freqEntry.get()))
+            self.freqEntry.configure(state="disabled")
+
+
+    def forceToggle(self):
+        if self.compactButton.get() == 1:
+            self.forceSlider.configure(state="normal")
+            self.forceEntry.configure(state="normal")
+        else:
+            self.forceSlider.configure(state="disabled")
+            self.forceEntry.delete(0, len(self.forceEntry.get()))
+            self.forceEntry.configure(state="disabled")
+
+    def rotateToggle(self):
+        if self.rotateButton.get() == 1:
+            self.rotateSlider.configure(state="normal")
+            self.rotateEntry.configure(state="normal")
+        else:
+            self.rotateSlider.configure(state="disabled")
+            self.rotateEntry.delete(0, len(self.rotateEntry.get()))
+            self.rotateEntry.configure(state="disabled")
+
+    def timeToggle(self):
+        if self.timeButton.get() == 1:
+            self.timeSlider.configure(state="normal")
+            self.timeEntry.configure(state="normal")
+        else:
+            self.timeSlider.configure(state="disabled")
+            self.timeEntry.delete(0, len(self.timeEntry.get()))
+            self.timeEntry.configure(state="disable")
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
